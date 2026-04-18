@@ -1,4 +1,4 @@
-import XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 const VALID_RANGES = ['weekly', 'monthly', 'yearly'];
 
@@ -246,17 +246,19 @@ const buildHistoryRows = (batches = []) => {
   }));
 };
 
-export const createHistoryWorkbook = (batches = []) => {
-  const workbook = XLSX.utils.book_new();
-  const historySheet = XLSX.utils.json_to_sheet(buildHistoryRows(batches));
-  XLSX.utils.book_append_sheet(workbook, historySheet, 'Entry History');
+export const createHistoryWorkbook = async (batches = []) => {
+  const workbook = new ExcelJS.Workbook();
+  const historySheet = workbook.addWorksheet('Entry History');
+  const rows = buildHistoryRows(batches);
+  historySheet.addRows(rows);
   return workbook;
 };
 
-export const createReportWorkbook = (analytics, batches = []) => {
-  const workbook = XLSX.utils.book_new();
+export const createReportWorkbook = async (analytics, batches = []) => {
+  const workbook = new ExcelJS.Workbook();
 
-  const summarySheet = XLSX.utils.json_to_sheet([
+  const summarySheet = workbook.addWorksheet('Summary');
+  summarySheet.addRows([
     { Metric: 'Range', Value: analytics.range },
     { Metric: 'Generated At', Value: analytics.generatedAt },
     { Metric: 'Total Batches', Value: analytics.summary.totalBatches },
@@ -271,7 +273,8 @@ export const createReportWorkbook = (analytics, batches = []) => {
     { Metric: 'Narrative Summary', Value: analytics.narrative }
   ]);
 
-  const trendSheet = XLSX.utils.json_to_sheet(analytics.timeSeries.map((item) => ({
+  const trendSheet = workbook.addWorksheet('Time Series');
+  trendSheet.addRows(analytics.timeSeries.map((item) => ({
     Period: item.label,
     SuccessfulPurchases: item.successfulPurchases,
     Extractions: item.extractions,
@@ -279,15 +282,12 @@ export const createReportWorkbook = (analytics, batches = []) => {
     SeedSpend: item.seedSpend.toFixed(2)
   })));
 
-  const batchSheet = XLSX.utils.json_to_sheet(buildHistoryRows(batches));
-
-  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
-  XLSX.utils.book_append_sheet(workbook, trendSheet, 'Time Series');
-  XLSX.utils.book_append_sheet(workbook, batchSheet, 'Batch History');
+  const batchSheet = workbook.addWorksheet('Batch History');
+  batchSheet.addRows(buildHistoryRows(batches));
 
   return workbook;
 };
 
-export const workbookToBuffer = (workbook) => {
-  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+export const workbookToBuffer = async (workbook) => {
+  return await workbook.xlsx.writeBuffer();
 };

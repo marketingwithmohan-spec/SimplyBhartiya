@@ -16,8 +16,8 @@ import {
 
 const router = express.Router();
 
-const sendWorkbook = (res, fileName, workbook) => {
-  const buffer = workbookToBuffer(workbook);
+const sendWorkbook = async (res, fileName, workbook) => {
+  const buffer = await workbookToBuffer(workbook);
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
   res.send(buffer);
@@ -42,8 +42,8 @@ router.get('/dashboard/analytics', async (req, res) => {
 router.get('/export/history.xlsx', async (req, res) => {
   try {
     const batches = await Batch.find().sort({ createdAt: -1 });
-    const workbook = createHistoryWorkbook(batches);
-    sendWorkbook(res, 'simply-bhartiya-entry-history.xlsx', workbook);
+    const workbook = await createHistoryWorkbook(batches);
+    await sendWorkbook(res, 'simply-bhartiya-entry-history.xlsx', workbook);
   } catch (error) {
     console.error('Error exporting history:', error);
     res.status(500).json({ error: error.message });
@@ -55,8 +55,8 @@ router.get('/reports/dashboard.xlsx', async (req, res) => {
     const range = normalizeRange(req.query.range);
     const batches = await Batch.find().sort({ createdAt: -1 });
     const analytics = buildDashboardAnalytics(batches, range);
-    const workbook = createReportWorkbook(analytics, batches);
-    sendWorkbook(res, `simply-bhartiya-dashboard-report-${range}.xlsx`, workbook);
+    const workbook = await createReportWorkbook(analytics, batches);
+    await sendWorkbook(res, `simply-bhartiya-dashboard-report-${range}.xlsx`, workbook);
   } catch (error) {
     console.error('Error exporting dashboard report:', error);
     res.status(500).json({ error: error.message });
