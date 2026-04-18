@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simply Bhartiya Inventory & Traceability Sysstem</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=20260415-6">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+    <div class="page-shell container-xl px-3 px-md-4 py-3 py-md-4">
+        <header class="app-header rounded-4 shadow-sm mb-3 mb-md-4">
+            <div class="brand-header">
+                <div class="brand-logo-wrap">
+                    <img src="assets/simply-bhartiya-logo-visible.png?v=6" alt="Simply Bhartiya Logo" class="brand-logo">
+                </div>
+                <div class="brand-text">
+                    <h1>Simply Bhartiya Inventory &amp; Traceability Sysstem</h1>
+                    <p class="subtitle mb-0">3-Stage Production Workflow with QR Code Tracking</p>
+                </div>
+            </div>
+        </header>
+
+        <section id="dashboard" class="tab-content active">
+            <div class="mobile-card card border-0 shadow-sm mb-3 mb-md-4">
+                <div class="card-body p-3 p-md-4">
+                    <div class="dashboard-head d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
+                        <div>
+                            <h2 class="mb-1">Dashboard &amp; Analytics</h2>
+                            <p class="stage-desc mb-0">Track purchases, extraction, packaging, and predictive insights.</p>
+                        </div>
+                        <div class="dashboard-actions d-flex flex-wrap gap-2">
+                            <div class="btn-group" role="group" aria-label="Time range filters">
+                                <button type="button" class="btn btn-outline-success filter-btn active" data-range="weekly">Weekly</button>
+                                <button type="button" class="btn btn-outline-success filter-btn" data-range="monthly">Monthly</button>
+                                <button type="button" class="btn btn-outline-success filter-btn" data-range="yearly">Yearly</button>
+                            </div>
+                            <button type="button" class="btn btn-success" id="export-history-btn">Export History (.xlsx)</button>
+                            <button type="button" class="btn btn-dark" id="download-report-btn">Download Report (.xlsx)</button>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4" id="dashboard-summary-cards">
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <button type="button" class="stats-card stats-card-purchase metric-card-btn" data-metric="successfulPurchases">
+                                <span class="stats-label">Successful Purchases</span>
+                                <strong class="stats-value" id="successfulPurchases-count">0</strong>
+                            </button>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <button type="button" class="stats-card stats-card-extraction metric-card-btn" data-metric="extractions">
+                                <span class="stats-label">Extractions</span>
+                                <strong class="stats-value" id="extractions-count">0</strong>
+                            </button>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <button type="button" class="stats-card stats-card-packaging metric-card-btn" data-metric="packaging">
+                                <span class="stats-label">Packaging</span>
+                                <strong class="stats-value" id="packaging-count">0</strong>
+                            </button>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <button type="button" class="stats-card stats-card-batches metric-card-btn" data-metric="totalBatches">
+                                <span class="stats-label">Active Batches</span>
+                                <strong class="stats-value" id="totalBatches-count">0</strong>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analytics-panel mb-4" id="metric-detail-panel">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+                            <div>
+                                <h3 class="panel-title mb-1" id="metric-detail-title">Click a metric card to view details</h3>
+                                <p class="stage-desc mb-0" id="metric-detail-subtitle">Batch-wise drill-down for the selected dashboard metric.</p>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle mb-0" id="metric-detail-table">
+                                <thead id="metric-detail-head">
+                                    <tr>
+                                        <th>Batch</th>
+                                        <th>Seed</th>
+                                        <th>Vendor</th>
+                                        <th>Status</th>
+                                        <th>Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="metric-detail-body">
+                                    <tr><td colspan="5" class="text-center text-muted py-4">Select any dashboard card above.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-xl-7">
+                            <div class="analytics-panel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="panel-title mb-0">Time-Series Snapshot</h3>
+                                    <span class="panel-badge" id="analytics-range-label">Monthly</span>
+                                </div>
+                                <div id="time-series-chart" class="chart-bars"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-xl-5">
+                            <div class="analytics-panel h-100">
+                                <h3 class="panel-title mb-3">Automated Summary</h3>
+                                <p id="dashboard-summary-text" class="summary-copy mb-3">Loading summary...</p>
+                                <p class="stage-desc mb-3"><strong>Seed spend this period:</strong> ₹<span id="current-seed-spend">0.00</span></p>
+                                <div class="prediction-card">
+                                    <h4 class="mb-3">Predictive Analysis</h4>
+                                    <div class="prediction-grid">
+                                        <div>
+                                            <span>Next Purchases</span>
+                                            <strong id="prediction-purchases">0</strong>
+                                        </div>
+                                        <div>
+                                            <span>Next Extractions</span>
+                                            <strong id="prediction-extractions">0</strong>
+                                        </div>
+                                        <div>
+                                            <span>Next Packaging</span>
+                                            <strong id="prediction-packaging">0</strong>
+                                        </div>
+                                        <div>
+                                            <span>Next Seed Spend</span>
+                                            <strong id="prediction-seed-spend">₹0.00</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-panel">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+                            <h3 class="panel-title mb-0">Batch-wise Performance</h3>
+                            <span class="text-muted small">Recent 12 batches</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Batch</th>
+                                        <th>Seed</th>
+                                        <th>Vendor</th>
+                                        <th>Purchase</th>
+                                        <th>Extraction</th>
+                                        <th>Packaging</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="batch-wise-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <nav class="tabs mb-3 mb-md-4">
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="stage1">Stage 1: Seed Procurement</button>
+            <button class="tab-btn" data-tab="stage2">Stage 2: Oil Extraction</button>
+            <button class="tab-btn" data-tab="stage3">Stage 3: Packaging</button>
+            <button class="tab-btn" data-tab="tracking">Track Batch</button>
+        </nav>
+
+        <!-- Stage 1: Seed Procurement -->
+        <section id="stage1" class="tab-content">
+            <div class="mobile-card card border-0 shadow-sm">
+                <div class="card-body p-3 p-md-4">
+                <h2>Stage 1: Seed Procurement</h2>
+                <p class="stage-desc">Register new seed batch and generate Bag QR Code</p>
+
+                <form id="stage1-form" class="form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vendorName">Vendor Name *</label>
+                            <input type="text" id="vendorName" name="vendorName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="purchasePlace">Purchase Place *</label>
+                            <input type="text" id="purchasePlace" name="purchasePlace" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pincode">Pincode *</label>
+                            <input type="text" id="pincode" name="pincode" pattern="[0-9]{6}" placeholder="e.g., 500001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="seedType">Seed Type *</label>
+                            <select id="seedType" name="seedType" required>
+                                <option value="">Select Seed Type</option>
+                                <option value="BM">Black Mustard (BM)</option>
+                                <option value="WS">White Sesame (WS)</option>
+                                <option value="GN">Groundnut (GN)</option>
+                                <option value="CO">Coconut (CO)</option>
+                                <option value="AL">Almond (AL)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="purchaseDate">Purchase Date *</label>
+                            <input type="datetime-local" id="purchaseDate" name="purchaseDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">Quantity (KGs) *</label>
+                            <input type="number" id="quantity" name="quantity" min="0" step="0.01" placeholder="e.g., 100" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price">Price (₹ per KG) *</label>
+                            <input type="number" id="price" name="price" min="0" step="0.01" placeholder="e.g., 120" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount (₹)</label>
+                            <input type="number" id="amount" name="amount" min="0" step="0.01" placeholder="Auto-calculated" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="packaging">Packaging (KGs) *</label>
+                            <input type="number" id="packaging" name="packaging" min="0" step="0.01" placeholder="e.g., 10 or 25" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="packageQuantity">Package Quantity *</label>
+                            <input type="number" id="packageQuantity" name="packageQuantity" min="0" step="1" placeholder="e.g., 1 or 2 or 4" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Create Batch & Generate Bag QR</button>
+                </form>
+
+                <div id="stage1-result" class="result-section" style="display: none;">
+                    <div class="success-box">
+                        <h3>✓ Batch Created Successfully</h3>
+                        <p><strong>Batch Number:</strong> <span id="batchNumber-display"></span></p>
+                        <div class="qr-container">
+                            <h4>Bag QR Code (Print & Paste on Seed Bag)</h4>
+                            <img id="bagQR-display" src="" alt="Bag QR Code" class="qr-image">
+                            <button class="btn btn-secondary" onclick="downloadQR('bagQR-display', 'BagQR')">Download QR</button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stage 2: Oil Extraction -->
+        <section id="stage2" class="tab-content">
+            <div class="mobile-card card border-0 shadow-sm">
+                <div class="card-body p-3 p-md-4">
+                <h2>Stage 2: Oil Extraction</h2>
+                <p class="stage-desc">Scan Bag QR Code and update extraction details</p>
+
+                <div class="form-group">
+                    <label>Step 1: Scan Bag QR Code</label>
+                    <div class="scanner-container">
+                        <div id="qr-scanner-stage2" style="width: 100%;"></div>
+                    </div>
+                    <input type="hidden" id="scannedBatchNumber-stage2" name="scannedBatchNumber">
+                    <button type="button" class="btn btn-secondary" onclick="toggleScanner('stage2')">
+                        <span id="scanner-toggle-stage2">Show Scanner</span>
+                    </button>
+                </div>
+
+                <div id="stage2-existing-data" style="display: none;" class="existing-data-box">
+                    <h4>Existing Seed Procurement Data:</h4>
+                    <div id="stage2-existing-display"></div>
+                </div>
+
+                <form id="stage2-form" class="form" style="display: none;">
+                    <h3>Step 2: Enter Extraction Details</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="workerName">Worker Name *</label>
+                            <input type="text" id="workerName" name="workerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="machineNumber">Machine Number *</label>
+                            <input type="text" id="machineNumber" name="machineNumber" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="extractionDateTime">Extraction Date & Time *</label>
+                            <input type="datetime-local" id="extractionDateTime" name="extractionDateTime" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Update Extraction & Generate Container QR</button>
+                </form>
+
+                <div id="stage2-result" class="result-section" style="display: none;">
+                    <div class="success-box">
+                        <h3>✓ Extraction Record Updated Successfully</h3>
+                        <div class="qr-container">
+                            <h4>Container QR Code (Print & Paste on Oil Container)</h4>
+                            <img id="containerQR-display" src="" alt="Container QR Code" class="qr-image">
+                            <button class="btn btn-secondary" onclick="downloadQR('containerQR-display', 'ContainerQR')">Download QR</button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stage 3: Packaging -->
+        <section id="stage3" class="tab-content">
+            <div class="mobile-card card border-0 shadow-sm">
+                <div class="card-body p-3 p-md-4">
+                <h2>Stage 3: Packaging</h2>
+                <p class="stage-desc">Scan Container QR Code and generate Customer & Internal QR Codes</p>
+
+                <div class="form-group">
+                    <label>Step 1: Scan Container QR Code</label>
+                    <div class="scanner-container">
+                        <div id="qr-scanner-stage3" style="width: 100%;"></div>
+                    </div>
+                    <input type="hidden" id="scannedBatchNumber-stage3" name="scannedBatchNumber">
+                    <button type="button" class="btn btn-secondary" onclick="toggleScanner('stage3')">
+                        <span id="scanner-toggle-stage3">Show Scanner</span>
+                    </button>
+                </div>
+
+                <div id="stage3-existing-data" style="display: none;" class="existing-data-box">
+                    <h4>Existing Batch Data:</h4>
+                    <div id="stage3-existing-display"></div>
+                </div>
+
+                <form id="stage3-form" class="form" style="display: none;">
+                    <h3>Step 2: Enter Packaging Details</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="packagingWorkerName">Packaging Worker Name *</label>
+                            <input type="text" id="packagingWorkerName" name="packagingWorkerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="packagingDateTime">Packaging Date & Time *</label>
+                            <input type="datetime-local" id="packagingDateTime" name="packagingDateTime" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bottleCapacity">Bottle Capacity *</label>
+                            <select id="bottleCapacity" name="bottleCapacity" required>
+                                <option value="">Select Bottle Capacity</option>
+                                <option value="250 ml">250 ml</option>
+                                <option value="500 ml">500 ml</option>
+                                <option value="1 litre">1 litre</option>
+                                <option value="2 litre">2 litre</option>
+                                <option value="5 litre">5 litre</option>
+                                <option value="10 litre">10 litre</option>
+                                <option value="15 litre">15 litre</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Complete Packaging & Generate Final QR Codes</button>
+                </form>
+
+                <div id="stage3-result" class="result-section" style="display: none;">
+                    <div class="success-box">
+                        <h3>✓ Packaging Complete - Final QR Codes Generated</h3>
+                        <div class="qr-grid">
+                            <div class="qr-container">
+                                <h4>Customer QR Code</h4>
+                                <p class="qr-desc">(For retail packaging)</p>
+                                <img id="customerQR-display" src="" alt="Customer QR Code" class="qr-image">
+                                <button class="btn btn-secondary" onclick="downloadQR('customerQR-display', 'CustomerQR')">Download QR</button>
+                            </div>
+                            <div class="qr-container">
+                                <h4>Internal/Business QR Code</h4>
+                                <p class="qr-desc">(For internal audit)</p>
+                                <img id="internalQR-display" src="" alt="Internal QR Code" class="qr-image">
+                                <button class="btn btn-secondary" onclick="downloadQR('internalQR-display', 'InternalQR')">Download QR</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tracking -->
+        <section id="tracking" class="tab-content">
+            <div class="mobile-card card border-0 shadow-sm mb-5">
+                <div class="card-body p-3 p-md-4">
+                <h2>Track Batch</h2>
+                <p class="stage-desc">Search for batch history by Batch Number</p>
+
+                <div class="form-group">
+                    <label>Batch Number Search</label>
+                    <div class="search-container">
+                        <input type="text" id="searchBatchNumber" placeholder="Enter Batch Number (e.g., BM20260413143025-500001)" autocomplete="off">
+                        <button type="button" class="btn btn-primary" onclick="searchBatch()">Search</button>
+                    </div>
+                </div>
+
+                <div id="tracking-result" class="result-section" style="display: none;">
+                    <div id="tracking-content"></div>
+                </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="alert-box" class="alert-box" style="display: none;">
+        <span id="alert-message"></span>
+        <button onclick="closeAlert()"><span class="close-btn">&times;</span></button>
+    </div>
+
+    <script src="app.js?v=20260415-6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
