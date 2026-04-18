@@ -318,29 +318,39 @@ function toggleScanner(stage) {
     }
 }
 
+const scannerConfig = {
+    fps: 10,
+    qrbox: { width: 300, height: 300 },
+    aspectRatio: 1.0,
+    disableFlip: false,
+    experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+    }
+};
+
 function startScanner2() {
     if (html5QrcodeScanner2) {
-        html5QrcodeScanner2.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, onScanSuccess2, onScanError)
+        html5QrcodeScanner2.start({ facingMode: 'environment' }, scannerConfig, onScanSuccess2, onScanError)
             .then(() => {
                 scanner2Active = true;
                 document.getElementById('scanner-toggle-stage2').textContent = 'Hide Scanner';
             })
             .catch((error) => {
                 console.error(error);
-                showAlert('Failed to start scanner. Please check camera permissions.', 'error');
+                showAlert('Failed to start scanner. Please check camera permissions and ensure the QR code is clearly visible.', 'error');
             });
         return;
     }
 
     html5QrcodeScanner2 = new Html5Qrcode('qr-scanner-stage2');
-    html5QrcodeScanner2.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, onScanSuccess2, onScanError)
+    html5QrcodeScanner2.start({ facingMode: 'environment' }, scannerConfig, onScanSuccess2, onScanError)
         .then(() => {
             scanner2Active = true;
             document.getElementById('scanner-toggle-stage2').textContent = 'Hide Scanner';
         })
         .catch((error) => {
             console.error(error);
-            showAlert('Failed to start scanner. Please check camera permissions.', 'error');
+            showAlert('Failed to start scanner. Please check camera permissions and ensure the QR code is clearly visible.', 'error');
         });
 }
 
@@ -438,27 +448,27 @@ function displayStage2Result(data) {
 
 function startScanner3() {
     if (html5QrcodeScanner3) {
-        html5QrcodeScanner3.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, onScanSuccess3, onScanError)
+        html5QrcodeScanner3.start({ facingMode: 'environment' }, scannerConfig, onScanSuccess3, onScanError)
             .then(() => {
                 scanner3Active = true;
                 document.getElementById('scanner-toggle-stage3').textContent = 'Hide Scanner';
             })
             .catch((error) => {
                 console.error(error);
-                showAlert('Failed to start scanner. Please check camera permissions.', 'error');
+                showAlert('Failed to start scanner. Please check camera permissions and ensure the QR code is clearly visible.', 'error');
             });
         return;
     }
 
     html5QrcodeScanner3 = new Html5Qrcode('qr-scanner-stage3');
-    html5QrcodeScanner3.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, onScanSuccess3, onScanError)
+    html5QrcodeScanner3.start({ facingMode: 'environment' }, scannerConfig, onScanSuccess3, onScanError)
         .then(() => {
             scanner3Active = true;
             document.getElementById('scanner-toggle-stage3').textContent = 'Hide Scanner';
         })
         .catch((error) => {
             console.error(error);
-            showAlert('Failed to start scanner. Please check camera permissions.', 'error');
+            showAlert('Failed to start scanner. Please check camera permissions and ensure the QR code is clearly visible.', 'error');
         });
 }
 
