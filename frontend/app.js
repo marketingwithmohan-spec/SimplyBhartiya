@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 let html5QrcodeScanner2 = null;
 let html5QrcodeScanner3 = null;
